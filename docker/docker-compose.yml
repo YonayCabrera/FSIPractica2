@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  my_tensorflow:
+    build: .
+    container_name: my_tensorflow_container
+    volumes:
+      - ../.:/notebooks
+    ports:
+      - "8888:8888"
+    restart: always
