@@ -82,8 +82,14 @@ validation_error_counter = 0
 training_errors = []
 validation_errors = []
 test_errors = []
+last_validation_error = 1
+before_validation_error = 1
+validation_error = 0.1
+epoch = 0
+diferrence = 100
 
-for epoch in xrange(100):
+while (validation_error <= last_validation_error and diferrence > 0.001):
+    epoch += 1
 
     for jj in xrange(len(x_training_data) / batch_size):
         batch_training_xs = x_training_data[jj * batch_size: jj * batch_size + batch_size]
@@ -102,19 +108,21 @@ for epoch in xrange(100):
     # Validation
     validation_error = sess.run(loss, feed_dict={x: batch_validation_xs, y_: batch_validation_ys})
 
-    if validation_errors:
-        last_validation_error = validation_errors[-1]
-        if validation_error >= last_validation_error:
-            validation_error_counter += 1
-            if validation_error_counter > maximum_validation_errors:
-                print "Exceeded maximum number[%d] of validation errors upticks, " \
-                      "so the training is stopped in epoch %d" \
-                      % (maximum_validation_errors, epoch)
-                break
-        else:
-            validation_error_counter = 0
+    #if validation_errors:
+    #    last_validation_error = validation_errors[-1]
+    #    if validation_error >= last_validation_error:
+    #        validation_error_counter += 1
+    #        if validation_error_counter > maximum_validation_errors:
+    #            print "Exceeded maximum number[%d] of validation errors upticks, " \
+    #                  "so the training is stopped in epoch %d" \
+    #                  % (maximum_validation_errors, epoch)
+    #            break
+    #    else:
+    #        validation_error_counter = 0
     validation_errors.append(validation_error)
-
+    if(epoch > 1):
+        diferrence = validation_errors[-2] - validation_error
+    last_validation_error = validation_errors[-1]
     # Training
     print_results(mode="Training", epoch_number=epoch, error=training_error,
                   batch_xs=batch_training_xs, batch_ys=batch_training_ys)
@@ -131,9 +139,9 @@ for kk in xrange(len(x_test_data) / batch_size):
     batch_test_xs = x_test_data[kk * batch_size: kk * batch_size + batch_size]
     batch_test_ys = y_test_data[kk * batch_size: kk * batch_size + batch_size]
     sess.run(train, feed_dict={x: batch_test_xs, y_: batch_test_ys})
-test_error = sess.run(loss, feed_dict={x: batch_test_xs, y_: batch_test_ys})
+    test_error = sess.run(loss, feed_dict={x: batch_test_xs, y_: batch_test_ys})
 
-test_errors.append(test_error)
+    test_errors.append(test_error)
 
 plt.ylabel('Errors')
 plt.xlabel('Epochs')
