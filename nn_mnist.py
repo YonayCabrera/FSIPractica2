@@ -42,8 +42,8 @@ valid_x, valid_y = valid_set
 test_x, test_y = test_set
 
 train_y = one_hot(train_y.astype(int), 10)
-valid_y = one_hot(valid_y.astype(int),10)
-test_y = one_hot(test_y.astype(int),10)
+valid_y = one_hot(valid_y.astype(int), 10)
+test_y = one_hot(test_y.astype(int), 10)
 
 x = tf.placeholder("float", [None, 784])  # samples
 y_ = tf.placeholder("float", [None, 10])  # labels
@@ -79,35 +79,50 @@ validation_errors = []
 test_errors = []
 last_validation_error = 1
 before_validation_error = 1
+epoch = 0
 validation_error = 0.1
 diferrence = 100
 
-for epoch in range(100):
+while (validation_error <= last_validation_error and diferrence > 0.001):
+    epoch += 1
     for jj in xrange(len(train_x) / batch_size):
         batch_training_xs = train_x[jj * batch_size: jj * batch_size + batch_size]
         batch_training_ys = train_y[jj * batch_size: jj * batch_size + batch_size]
         sess.run(train, feed_dict={x: batch_training_xs, y_: batch_training_ys})
 
+    for kk in xrange(len(valid_x) / batch_size):
+        batch_validation_xs = valid_x[kk * batch_size: kk * batch_size + batch_size]
+        batch_validation_ys = valid_y[kk * batch_size: kk * batch_size + batch_size]
+        sess.run(train, feed_dict={x: batch_validation_xs, y_: batch_validation_ys})
+
     training_error = sess.run(loss, feed_dict={x: batch_training_xs, y_: batch_training_ys})
     training_errors.append(training_error)
+
+    validation_error = sess.run(loss, feed_dict={x: batch_validation_xs, y_: batch_validation_ys})
+    validation_errors.append(validation_error)
+    if (epoch > 1):
+        diferrence = validation_errors[-2] - validation_error
+    last_validation_error = validation_errors[-1]
 
     print_results(mode="Training", epoch_number=epoch, error=training_error,
                   batch_xs=batch_training_xs, batch_ys=batch_training_ys)
 
+    print_results(mode="Validation", epoch_number=epoch, error=validation_error,
+                  batch_xs=batch_validation_xs, batch_ys=batch_validation_ys)
 # ---------------- Visualizing some element of the MNIST dataset --------------
 plt.ylabel('Errors')
 plt.xlabel('Epochs')
 # test_line, = plt.plot(test_errors)
 training_line, = plt.plot(training_errors)
-# validation_line, = plt.plot(validation_errors)
-plt.legend(handles=[training_line],
-           labels=["Training errors"])
+validation_line, = plt.plot(validation_errors)
+plt.legend(handles=[training_line, validation_line],
+           labels=["Training errors", "Validation errors"])
 plt.savefig('mn.png')
 
-plt.imshow(train_x[57].reshape((28, 28)), cmap=cm.Greys_r)
+#plt.imshow(train_x[57].reshape((28, 28)), cmap=cm.Greys_r)
 # plt.show()  # Let's see a sample
 # print train_y[57]
-plt.savefig('number.png')
+#plt.savefig('number.png')
 
 
 # TODO: the neural net!!
