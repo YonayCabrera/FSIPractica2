@@ -110,13 +110,25 @@ while (validation_error <= last_validation_error and diferrence > 0.001):
     print_results(mode="Validation", epoch_number=epoch, error=validation_error,
                   batch_xs=batch_validation_xs, batch_ys=batch_validation_ys)
 # ---------------- Visualizing some element of the MNIST dataset --------------
+
+for i in xrange(epoch):
+    for kk in xrange(len(test_x) / batch_size):
+        batch_test_xs = test_x[kk * batch_size: kk * batch_size + batch_size]
+        batch_test_ys = test_y[kk * batch_size: kk * batch_size + batch_size]
+        sess.run(train, feed_dict={x: batch_test_xs, y_: batch_test_ys})
+        test_error = sess.run(loss, feed_dict={x: batch_test_xs, y_: batch_test_ys})
+    test_error = sess.run(loss, feed_dict={x: batch_test_xs, y_: batch_test_ys})
+    test_errors.append(test_error)
+    print_results(mode="Testing", epoch_number=i, error=test_error,
+                  batch_xs=batch_test_xs, batch_ys=batch_test_ys)
+
 plt.ylabel('Errors')
 plt.xlabel('Epochs')
-# test_line, = plt.plot(test_errors)
+test_line, = plt.plot(test_errors)
 training_line, = plt.plot(training_errors)
 validation_line, = plt.plot(validation_errors)
-plt.legend(handles=[training_line, validation_line],
-           labels=["Training errors", "Validation errors"])
+plt.legend(handles=[training_line, validation_line, test_line],
+           labels=["Training errors", "Validation errors", "Test errors"])
 plt.savefig('mn.png')
 
 #plt.imshow(train_x[57].reshape((28, 28)), cmap=cm.Greys_r)

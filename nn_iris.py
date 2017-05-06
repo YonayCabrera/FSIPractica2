@@ -135,13 +135,17 @@ while (validation_error <= last_validation_error and diferrence > 0.001):
 print "----------------------"
 print "   Training finished  "
 print "----------------------"
-for kk in xrange(len(x_test_data) / batch_size):
-    batch_test_xs = x_test_data[kk * batch_size: kk * batch_size + batch_size]
-    batch_test_ys = y_test_data[kk * batch_size: kk * batch_size + batch_size]
-    sess.run(train, feed_dict={x: batch_test_xs, y_: batch_test_ys})
+for i in xrange(epoch):
+    for kk in xrange(len(x_test_data) / batch_size):
+        batch_test_xs = x_test_data[kk * batch_size: kk * batch_size + batch_size]
+        batch_test_ys = y_test_data[kk * batch_size: kk * batch_size + batch_size]
+        sess.run(train, feed_dict={x: batch_test_xs, y_: batch_test_ys})
+        test_error = sess.run(loss, feed_dict={x: batch_test_xs, y_: batch_test_ys})
     test_error = sess.run(loss, feed_dict={x: batch_test_xs, y_: batch_test_ys})
-
     test_errors.append(test_error)
+    print_results(mode="Testing", epoch_number=i, error=test_error,
+                  batch_xs=batch_test_xs, batch_ys=batch_test_ys)
+
 
 plt.ylabel('Errors')
 plt.xlabel('Epochs')
